@@ -15,8 +15,8 @@ kameron help
 kameron help <command name>
 ```
 ###### Do you want to teach kameron new things ?
-No need to modify existing code ( ok i lie but adding module is a breeze )
-Create new module file somefile.js and try to export only one function ( it will be run in main kameron.js file )
+No need to modify existing code ( *ok i lie but adding module is a breeze* )
+Create new module file somefile.js and try to export only one function ( *it will be run in main kameron.js file* )
 example module:
 ```
 exports.decide = function(){
@@ -24,7 +24,7 @@ exports.decide = function(){
   return result;
 }
 ```
-remember to use callbacks if dealing with asynchronus tasks ( like database connections ) :
+remember to use callbacks if dealing with asynchronus tasks ( *like database connections* ) :
 ```
 exports.logMessage = function (callback){
   //some asynchronus task
@@ -39,4 +39,4 @@ you will need:
     - mysql
     - shell.js
 2. mysql
-3. Linux distribution ( or anything that can run cron and bash commands )
+3. Linux distribution ( *or anything that can run cron and bash commands* )
