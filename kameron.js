@@ -24,11 +24,13 @@ manual.set('decide','kameron decide <option> or <option> or ...\nlet kameron dec
 manual.set('bitbucket','Wish to see source code and contribute ? type in kameron bitbucket to receive link + credentials');
 manual.set('poll','Creates simple poll with reactions to vote.\nexample:\nkameron poll should i jump off building');
 manual.set('clean','kameron clean <number>\nDelete many messages to clean chat.\nexample:\nkameron clean 4')
-manual.set('talk','kameron talk <type anything>\nYou can literally talk with kameron now, isn\'t that coolest thing ever ?\nexample:\nkameron talk how are you doing ?');
+manual.set('talk','kameron talk <type anything>\n__or__\nkameron, <type anything>\nYou can literally talk with kameron now, isn\'t that coolest thing ever ?\n*It uses **AI** from https://cakechat.replika.ai to generate responses*\nexample:\nkameron talk how are you doing ?\n__or__\nkameron, how are you doing ?');
 client.on('message', message => {
 var args = message.content.split(" ");
 if (args[0]=='X') {message.channel.send('D');return;}
 if (args[0]!='kameron') {return;}
+if (args[0]=='kameron,') {args[1]='talk';}
+
 switch (args[1]) {
 
   case 'remind':
