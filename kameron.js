@@ -83,6 +83,7 @@ switch (args[1]) {
       }
     });
   break;
+  
   case 'help':
       var block = new RichEmbed();
         if ((args.length==3)&&(manual.get(args[2])!=='undefined')) {

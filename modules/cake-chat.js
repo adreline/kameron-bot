@@ -5,7 +5,6 @@ var post_data = {
     "say something interesting",
     "cool"
   ],
-  "emotion":"joy",
   "from_cakechat":true
 };
 exports.talk = function(mess,callback){
