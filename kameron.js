@@ -28,8 +28,8 @@ manual.set('talk','kameron talk <type anything>\n__or__\nkameron, <type anything
 client.on('message', message => {
 var args = message.content.split(" ");
 if (args[0]=='X') {message.channel.send('D');return;}
+if (args[0]=='kameron,') {args[1]='talk';args[0]='kameron';}
 if (args[0]!='kameron') {return;}
-if (args[0]=='kameron,') {args[1]='talk';}
 
 switch (args[1]) {
 
@@ -75,7 +75,7 @@ switch (args[1]) {
   break;
 
   case 'talk':
-    modules.cake_chat.talk(message.content.replace('kameron talk ',''),function(res){
+    modules.cake_chat.talk(message.content.replace('kameron talk ','').replace('kameron, ',''),function(res){
       if (res!='ERROR') {
         message.channel.send(res);
       }else {
