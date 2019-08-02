@@ -11,6 +11,8 @@ Kameron does not require any form of care ( it is **_literally_** just a pebble 
 just type in discord chat
 ```
 kameron help
+//or for information about specific command
+kameron help <command name>
 ```
 ###### Do you want to teach kameron new things ?
 No need to modify existing code ( ok i lie but adding module is a breeze )
@@ -32,9 +34,9 @@ exports.logMessage = function (callback){
 ###### Do you want kameron to live in your own PC ?
 you will need:
 1. node.js
-    -Discord.js
-    -request
-    -mysql
-    -shell.js
+    - Discord.js
+    - request
+    - mysql
+    - shell.js
 2. mysql
 3. Linux distribution ( or anything that can run cron and bash commands )
