@@ -33,6 +33,7 @@ exports.logMessage = function (callback){
 ```
 ###### Do you want kameron to live in your own PC ?
 you will need:
+
 1. node.js
     - Discord.js
     - request

@@ -15,16 +15,21 @@ const client = new Client();
 const token='NTk2NzI5NDkyMTk0NzIxODEz.XR9xug.jXvAdZvG8h8X9xwrHt-qmtDwEPM';
 var channelid='596691844205903878'; //methanos
 var guildid='596691844205903874'; //adios
+var writting=false; //flag if bot is waiting for markov text to be generated
 const manual = new Map();
 manual.set('remind', 'kameron remind me of <enter your message> <enter time>\nif you wish to be reminded once, add "once" at the end\nuse https://crontab.guru to create timing and just paste it anywhere in the command \n example command:\nkameron remind me of something 14 20 * * * once');
 manual.set('inspire','Type in kameron inspire to receive inspiring image\nexample:\nkameron inspire me');
 manual.set('X','Responds with "D"');
 manual.set('help','List all avaiable commands');
-manual.set('decide','kameron decide <option> or <option> or ...\nlet kameron decide important life choices for you.\ntype in a many options as you like\nexample:\nkameron decide play ow or not play ow')
+manual.set('decide','kameron decide <option> or <option> or ...\nlet kameron decide important life choices for you.\ntype in a many options as you like\nexample:\nkameron decide play ow or not play ow');
 manual.set('bitbucket','Wish to see source code and contribute ? type in kameron bitbucket to receive link + credentials');
 manual.set('poll','Creates simple poll with reactions to vote.\nexample:\nkameron poll should i jump off building');
-manual.set('clean','kameron clean <number>\nDelete many messages to clean chat.\nexample:\nkameron clean 4')
+manual.set('clean','kameron clean <number>\nDelete many messages to clean chat.\nexample:\nkameron clean 4');
 manual.set('talk','kameron talk <type anything>\n__or__\nkameron, <type anything>\nYou can literally talk with kameron now, isn\'t that coolest thing ever ?\n*It uses **AI** from https://cakechat.replika.ai to generate responses*\nexample:\nkameron talk how are you doing ?\n__or__\nkameron, how are you doing ?');
+manual.set('markov','kameron markov <source> <state> <length>\ngenerates text using markov chains algorithm\n**sources** -> __text to use__\n lotr - entire lord of the rings\n lovecraft - entire lovecraft bibliography\n combined - all above\n**state** -> __complexity of a chain, the higher the more refined sentences are__\navaiable states:\n1 2 3\ndefault is 3\n**length**\n story\n quoute\n**example**\nkameron markov lotr 3 story');
+manual.set('avatar','kameron avatar <user>\nSends link to user avatar. Specify user by pinging\nexample:\nkameron avatar @debaleba');
+
+
 client.on('message', message => {
 var args = message.content.split(" ");
 if (args[0]=='X') {message.channel.send('D');return;}
@@ -83,7 +88,7 @@ switch (args[1]) {
       }
     });
   break;
-  
+
   case 'help':
       var block = new RichEmbed();
         if ((args.length==3)&&(manual.get(args[2])!=='undefined')) {
@@ -103,6 +108,37 @@ switch (args[1]) {
           block.setFooter('For more info type kameron help <command name>');
         }
         message.channel.send(block);
+  break;
+
+  case 'markov':
+    //source state length
+    //<source> <state> <length>
+  if (!writting) {
+    writting=true;
+    modules.markov_chain.chain(args[2],args[3],args[4],function(res){
+      message.channel.send(res);
+      writting=false;
+    });
+    message.react('🆗');
+  }else {
+    message.channel.send('wait, im still writting');
+  }
+
+
+  break;
+
+  case 'avatar':
+    var userr = client.users.get(modules.utilities.clearAll(['<','>','@'],args[2]));
+    if (userr !== void(0)) {
+      var block = new RichEmbed();
+      //block.setDescription("");
+      block.setColor('RANDOM');
+      block.setAuthor(userr.username,userr.avatarURL,userr.avatarURL);
+      block.setImage(userr.avatarURL);
+      message.channel.send(block);
+    }else {
+      message.channel.send('invalid user');
+    }
   break;
 
   default:

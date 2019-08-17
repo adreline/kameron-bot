@@ -29,3 +29,17 @@ exports.decide = function(string){
   console.log("clean["+index+"]= "+clean[index]);
   return clean[index];
 }
+
+exports.clearAll = function(arr,hay){
+  console.log('hay='+hay);
+  if (hay !== void(0)) {
+    var res=hay;
+    arr.forEach(function(item){
+      res=res.replace(item,'');
+    });
+    return res;
+  }else {
+    return 'undefined';
+  }
+
+}
