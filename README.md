@@ -34,10 +34,10 @@ exports.logMessage = function (callback){
 ###### Do you want kameron to live in your own PC ?
 you will need:
 
- 1. node.js
+1. node.js
     - Discord.js
     - request
     - mysql
     - shell.js
- 2. mysql
- 3. Linux distribution ( *or anything that can run cron and bash commands* )
+2. mysql
+3. Linux distribution ( *or anything that can run cron and bash commands* )
