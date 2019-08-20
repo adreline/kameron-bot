@@ -18,8 +18,14 @@ const client = new Client();
 const token='NTk2NzI5NDkyMTk0NzIxODEz.XR9xug.jXvAdZvG8h8X9xwrHt-qmtDwEPM';
 var channelid='596691844205903878'; //methanos
 var guildid='596691844205903874'; //adios
+//AccuWeather api keys
+var primary_key = 'eQqfy0EaGMiJ69IGC6W3utnE3Q6Eenes';
+var backup_key = 'g9HXOhAljxUD1eR2ruhZRtrG6Wubv6Lb';
+var working_key = primary_key;
+//flags
 var writting=false; //flag if bot is waiting for markov text to be generated
 var memegen=false; //flag if bot is waiting for meme to be generated
+var backup_api=false; //flag if bot is using secondary weather api key
 const manual = new Map();
 manual.set('remind', 'kameron remind me of <enter your message> <enter time>\nif you wish to be reminded once, add "once" at the end\nuse https://crontab.guru to create timing and just paste it anywhere in the command \n example command:\nkameron remind me of something 14 20 * * * once');
 manual.set('inspire','Type in kameron inspire to receive inspiring image\nexample:\nkameron inspire me');
@@ -33,6 +39,7 @@ manual.set('talk','kameron talk <type anything>\n__or__\nkameron, <type anything
 manual.set('markov','kameron markov <source> <state> <length>\ngenerates text using markov chains algorithm\n**sources** -> __text to use__\n lotr - entire lord of the rings\n lovecraft - entire lovecraft bibliography\n combined - all above\n**state** -> __complexity of a chain, the higher the more refined sentences are__\navaiable states:\n1 2 3\ndefault is 3\n**length**\n story\n quoute\n**example**\nkameron markov lotr 3 story');
 manual.set('avatar','kameron avatar <user>\nSends link to user avatar. Specify user by pinging\nexample:\nkameron avatar @debaleba');
 manual.set('memegen','kameron memegen <caption>\ncreates meme using appended image and provided caption\ntype in command and caption then add image to your message and send it');
+manual.set('weather','kameron weather <location>\ngives current weather at location\nJust type in the city and country (or only city but idk what will happen)\n**example:**\nkameron weather Lublin Poland\n\n__Note__\n**kameron weather backup_api** - this will swap api key, use if one is now working\n**kameron weather api** - this will tell you which api key kameron is using currently');
 
 client.on('message', message => {
 var args = message.content.split(" ");
@@ -41,6 +48,49 @@ if (args[0]=='kameron,') {args[1]='talk';args[0]='kameron';}
 if (args[0]!='kameron') {return;}
 
 switch (args[1]) {
+
+  case 'weather':
+      //if we need to swap api key
+      if (args[2]=='backup_api') {
+        if (backup_api) {
+          backup_api=false;
+          working_key=primary_key;
+          message.channel.send('Switched to primary api key');
+          break;
+        }else {
+          backup_api=true;
+          working_key=backup_key;
+          message.channel.send('Switched to backup api key');
+          break;
+        }
+      }
+      if (args[2]=='api') {
+        if (backup_api) {
+          message.channel.send('I\'m using backup key');
+          break;
+        }else {
+          message.channel.send('I\'m using primary key');
+          break;
+        }
+      }
+      //remove command from message so we are left with only the location and also trim it just for sure
+      var location = message.content.replace('kameron weather','').trim().replace(' ','%20');
+      //call weather module
+      modules.accu.getWeather(working_key,location, function(success,report){
+        if (success) {
+              var block = new RichEmbed();
+              block.setTitle('Weather at '+report.location);
+              block.setURL(report.link);
+              block.setThumbnail(report.icon);
+              block.addField('**'+report.text+'**\n',report.details,true);
+              block.setColor('RANDOM');
+              block.setFooter('Data provided by https://developer.accuweather.com/\n');
+              message.channel.send(block);
+        }else {
+          message.channel.send(report);
+        }
+      });
+  break;
 
   case 'remind':
     modules.reminder.remind(message,function(result){
@@ -168,6 +218,7 @@ switch (args[1]) {
     var filename = message.attachments.first().filename;
     var url = message.attachments.first().url;
     memegen=true;
+    message.react('🆗');
     modules.memegen.makememe(caption,filename,url,function(res){
     memegen=false;
       message.channel.send("meme",{
