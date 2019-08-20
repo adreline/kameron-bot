@@ -40,6 +40,8 @@ manual.set('markov','kameron markov <source> <state> <length>\ngenerates text us
 manual.set('avatar','kameron avatar <user>\nSends link to user avatar. Specify user by pinging\nexample:\nkameron avatar @debaleba');
 manual.set('memegen','kameron memegen <caption>\ncreates meme using appended image and provided caption\ntype in command and caption then add image to your message and send it');
 manual.set('weather','kameron weather <location>\ngives current weather at location\nJust type in the city and country (or only city but idk what will happen)\n**example:**\nkameron weather Lublin Poland\n\n__Note__\n**kameron weather backup_api** - this will swap api key, use if one is now working\n**kameron weather api** - this will tell you which api key kameron is using currently');
+manual.set('play','kameron play <youtube link>\nplay a youtube video, this command will add any new files to the queue if its already playing something\n**kameron play skip** - Skip current song\n**kameron play song** - See what is playing right now\n**kameron play queue** - View song queue');
+
 
 client.on('message', message => {
 var args = message.content.split(" ");
@@ -48,6 +50,29 @@ if (args[0]=='kameron,') {args[1]='talk';args[0]='kameron';}
 if (args[0]!='kameron') {return;}
 
 switch (args[1]) {
+
+  case 'play':
+    if (args[2]=='skip') {
+      modules.music.skipSong();
+      break;
+    }
+    if (args[2]=='queue') {
+      message.channel.send(modules.music.viewQueue());
+      break;
+    }
+    if (args[2]=='song') {
+      message.channel.send(modules.music.nowPlaying());
+      break;
+    }
+    if (message.member.voiceChannel===void(0)) {
+      message.channel.send('You are not in a voice chat');
+    }else {
+      modules.music.playSong(message.member.voiceChannel,args[2],function(res){
+        message.channel.send(res);
+        message.delete();
+      });
+    }
+  break;
 
   case 'weather':
       //if we need to swap api key
