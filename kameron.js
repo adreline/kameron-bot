@@ -4,9 +4,9 @@ const http = require('http');
 const https = require('https');
 var request = require("request");
 
-
-
 const modules = require('./modules/modules.js');
+const manual = require('./manual.js');
+
 /*
 const ytdl = require('ytdl-core');
 var mysql = require('mysql');
@@ -26,25 +26,12 @@ var working_key = primary_key;
 var writting=false; //flag if bot is waiting for markov text to be generated
 var memegen=false; //flag if bot is waiting for meme to be generated
 var backup_api=false; //flag if bot is using secondary weather api key
-const manual = new Map();
-manual.set('remind', 'kameron remind me of <enter your message> <enter time>\nif you wish to be reminded once, add "once" at the end\nuse https://crontab.guru to create timing and just paste it anywhere in the command \n example command:\nkameron remind me of something 14 20 * * * once');
-manual.set('inspire','Type in kameron inspire to receive inspiring image\nexample:\nkameron inspire me');
-manual.set('X','Responds with "D"');
-manual.set('help','List all avaiable commands');
-manual.set('decide','kameron decide <option> or <option> or ...\nlet kameron decide important life choices for you.\ntype in a many options as you like\nexample:\nkameron decide play ow or not play ow');
-manual.set('bitbucket','Wish to see source code and contribute ? type in kameron bitbucket to receive link + credentials');
-manual.set('poll','Creates simple poll with reactions to vote.\nexample:\nkameron poll should i jump off building');
-manual.set('clean','kameron clean <number>\nDelete many messages to clean chat.\nexample:\nkameron clean 4');
-manual.set('talk','kameron talk <type anything>\n__or__\nkameron, <type anything>\nYou can literally talk with kameron now, isn\'t that coolest thing ever ?\n*It uses **AI** from https://cakechat.replika.ai to generate responses*\nexample:\nkameron talk how are you doing ?\n__or__\nkameron, how are you doing ?');
-manual.set('markov','kameron markov <source> <state> <length>\ngenerates text using markov chains algorithm\n**sources** -> __text to use__\n lotr - entire lord of the rings\n lovecraft - entire lovecraft bibliography\n combined - all above\n**state** -> __complexity of a chain, the higher the more refined sentences are__\navaiable states:\n1 2 3\ndefault is 3\n**length**\n story\n quoute\n**example**\nkameron markov lotr 3 story');
-manual.set('avatar','kameron avatar <user>\nSends link to user avatar. Specify user by pinging\nexample:\nkameron avatar @debaleba');
-manual.set('memegen','kameron memegen <caption>\ncreates meme using appended image and provided caption\ntype in command and caption then add image to your message and send it');
-manual.set('weather','kameron weather <location>\ngives current weather at location\nJust type in the city and country (or only city but idk what will happen)\n**example:**\nkameron weather Lublin Poland\n\n__Note__\n**kameron weather backup_api** - this will swap api key, use if one is now working\n**kameron weather api** - this will tell you which api key kameron is using currently');
-manual.set('play','kameron play <youtube link>\nplay a youtube video, this command will add any new files to the queue if its already playing something\n**kameron play skip** - Skip current song\n**kameron play song** - See what is playing right now\n**kameron play queue** - View song queue');
+var tts=false; //if kameron is to use tts to talk to you using cake chat
 
 
 client.on('message', message => {
 var args = message.content.split(" ");
+if (message.content.trim().toLowerCase()=='bruh') {message.channel.send('🏅 **__tHiS iS cErTiFiEd BrUh MoMeNt__** 🏅');message.react('🏅');}
 if (args[0]=='X') {message.channel.send('D');return;}
 if (args[0]=='kameron,') {args[1]='talk';args[0]='kameron';}
 if (args[0]!='kameron') {return;}
@@ -130,7 +117,7 @@ switch (args[1]) {
   break;
 
   case 'decide':
-    message.channel.send('```'+modules.utilities.decide(message.content)+'```');
+    message.channel.send('**'+modules.utilities.decide(message.content)+'**');
   break;
 
   case 'poll':
@@ -151,57 +138,78 @@ switch (args[1]) {
 
   case 'clean':
         var size = parseInt(args[2]);
-        if (!isNaN(size)&&size<50) {
+        if (!isNaN(size)&&size=<50) {
           message.channel.bulkDelete(size);
         }else {
-          message.channel.send('But how many messages to delete 🤔');
+          if (size>50) {
+            message.channel.send('This is too many, max is 50');
+          }else {
+            message.channel.send('But how many messages to delete 🤔');
+          }
         }
   break;
 
   case 'talk':
-    modules.cake_chat.talk(message.content.replace('kameron talk ','').replace('kameron, ',''),function(res){
-      if (res!='ERROR') {
-        message.channel.send(res);
-      }else {
-        message.channel.send('Sorry, i don\'t know how to respond');
+      if (args[2]=='tts') {
+        if (tts) {
+          tts=false;
+          message.channel.send('I will use text chat to talk with you');
+        }else {
+          tts=true;
+          message.channel.send('I will use voice chat to talk with you');
+        }
+      break;
       }
-    });
+    if (args[2]=='voice') {
+      if (message.member.voiceChannel===void(0)) {
+        message.channel.send('You are not in a voice chat');
+        break;
+      }
+      modules.experimental.getVoice(message.member.voiceChannel,client,function(input){
+        message.channel.send('i think you said: '+input);
+        modules.cake_chat.talk(input,function(response){
+          modules.experimental.start(message.member.voiceChannel,client,response);
+        });
+      });
+    }else {
+      modules.cake_chat.talk(message.content.replace('kameron talk ','').replace('kameron, ',''),function(res){
+        if (res!='ERROR') {
+          if (tts) {
+          modules.experimental.start(message.member.voiceChannel,client,res);
+        }else {
+          message.channel.send(res);
+        }
+        }else {
+          message.channel.send('Sorry, i don\'t know how to respond');
+        }
+      });
+    }
+
+
   break;
 
   case 'help':
-      var block = new RichEmbed();
-        if ((args.length==3)&&(manual.get(args[2])!=='undefined')) {
-          block.setTitle(args[2]);
-          block.setDescription(manual.get(args[2]));
-          block.setColor('RANDOM');
-        }else {
-          block.setTitle('List of commands');
-          var commands = '';
-          for (var [key, value] of manual) {
-            commands+=key+'\n';
-          }
-          block.setDescription(commands+"__**commands start with 'kameron'**__");
-          block.setColor('RANDOM');
-          block.setAuthor(client.user.username,client.user.avatarURL,client.user.avatarURL);
-          block.setThumbnail(client.guilds.get(guildid).iconURL);
-          block.setFooter('For more info type kameron help <command name>');
-        }
-        message.channel.send(block);
+    message.channel.send(manual.getHelp(args[2]));
   break;
 
   case 'markov':
-    //source state length
-    //<source> <state> <length>
-  if (!writting) {
-    writting=true;
-    modules.markov_chain.chain(args[2],args[3],args[4],function(res){
-      message.channel.send(res);
-      writting=false;
-    });
-    message.react('🆗');
-  }else {
-    message.channel.send('wait, im still writting');
-  }
+      //source state length
+      //<source> <state> <length>
+    if (!writting) {
+      writting=true;
+      modules.markov_chain.chain(args[2],args[3],args[4],function(res,text){
+        if (message.content.endsWith('tts')) {
+          modules.experimental.start(message.member.voiceChannel,client,text);
+          message.channel.send(res);
+        }else {
+          message.channel.send(res);
+        }
+        writting=false;
+      });
+      message.react('🆗');
+    }else {
+      message.channel.send('wait, im still writting');
+    }
 
 
   break;
@@ -219,6 +227,7 @@ switch (args[1]) {
       message.channel.send('invalid user');
     }
   break;
+
   case 'memegen':
 
     //catch any errors and lacking variables

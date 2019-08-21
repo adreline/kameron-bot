@@ -13,7 +13,7 @@ exports.chain = function(source,state,length,callback){
       block.setTitle('Story');
       block.setDescription(data);
       block.setColor('RANDOM');
-      callback(block);
+      callback(block,data);
     });
   }else {
     if (source=='lotr'||source=='lovecraft') {
@@ -28,7 +28,7 @@ exports.chain = function(source,state,length,callback){
               block.setTitle('Story');
               block.setDescription(data);
               block.setColor('RANDOM');
-              callback(block);
+              callback(block,data);
             }
 
           });
