@@ -152,11 +152,11 @@ switch (args[1]) {
   case 'clean':
         //deletes messages in bulk
         var size = parseInt(args[2]);
-        if (!isNaN(size)&&size=<50) {
+        if (!isNaN(size)&&size<50) {
           //if argument is a number and is under discord api limit of 50, delete
           message.channel.bulkDelete(size);
         }else {
-          if (size>50) {
+          if (size>50||size==50) {
             message.channel.send('This is too many, max is 50');
           }else {
             message.channel.send('But how many messages to delete 🤔');
@@ -230,7 +230,7 @@ switch (args[1]) {
 
   case 'help':
     //invoke getHelp function from manual module
-    message.channel.send(manual.getHelp(args[2]));
+    message.channel.send(manual.getHelp(args[2],client,client.guilds.get(guildid).iconURL));
   break;
 
   case 'markov':

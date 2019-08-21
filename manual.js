@@ -15,7 +15,7 @@ manual.set('memegen','kameron memegen <caption>\ncreates meme using appended ima
 manual.set('weather','kameron weather <location>\ngives current weather at location\nJust type in the city and country (or only city but idk what will happen)\n**example:**\nkameron weather Lublin Poland\n\n__Note__\n**kameron weather backup_api** - this will swap api key, use if one is now working\n**kameron weather api** - this will tell you which api key kameron is using currently');
 manual.set('play','kameron play <youtube link>\nplay a youtube video, this command will add any new files to the queue if its already playing something\n**kameron play skip** - Skip current song\n**kameron play song** - See what is playing right now\n**kameron play queue** - View song queue');
 
-exports.getHelp = function(command){
+exports.getHelp = function(command,client,thumbnail){
 
 
   if (command===void(0)) {
@@ -29,7 +29,7 @@ exports.getHelp = function(command){
     block.setDescription(commands+"__**commands start with 'kameron'**__");
     block.setColor('RANDOM');
     block.setAuthor(client.user.username,client.user.avatarURL,client.user.avatarURL);
-    block.setThumbnail(client.guilds.get(guildid).iconURL);
+    block.setThumbnail(thumbnail);
     block.setFooter('For more info type kameron help <command name>');
     return block;
   }else {
