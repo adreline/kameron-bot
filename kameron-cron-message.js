@@ -7,7 +7,7 @@ const http = require('http');
 const child_process = require("child_process");
 var request = require("request");
 var shell = require('shelljs');
-const astropix = require("./modules/astronomy_picture_daily.js");
+const daily = require("./modules/daily.js");
 const client = new Client();
 const token="NTk2NzI5NDkyMTk0NzIxODEz.XR9xug.jXvAdZvG8h8X9xwrHt-qmtDwEPM";
 var channelid='596691844205903878'; //methanos
@@ -17,16 +17,34 @@ var message_id=parseInt(process.argv[2]);
 
 if (isNaN(message_id)) {
   switch (process.argv[2]) {
+    case 'natgeopix':
+      daily.getNatgeoPictures(function(res){
+        if (res!='error') {
+          var block = new RichEmbed();
+          block.setTitle('National Geographics Picture of the Day');
+          block.setURL(res.url);
+          block.setImage(res.picture);
+          block.setThumbnail('https://cdn.freebiesupply.com/logos/thumbs/2x/national-geographic-channel-1-logo.png');
+          block.addField('**'+res.title+'**\n',res.caption,true);
+          block.setColor('RANDOM');
+          block.setFooter('Image Credits: '+res.credit);
+          send_message(block);
+        }
+      });
+    break;
     case 'astropix':
-      astropix.getPicture(function(res){
+      daily.getAstroPicture(function(res){
+        if (res!='error') {
         var block = new RichEmbed();
         block.setTitle('Astronomy Picture of the Day');
         block.setURL(res.picture_big);
         block.setImage(res.picture_small);
+        block.setThumbnail('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/1224px-NASA_logo.svg.png');
         block.addField('**'+res.title+'**\n',res.explanation,true);
         block.setColor('RANDOM');
         block.setFooter('Image Credits: '+res.credits);
         send_message(block);
+      }
       });
     break;
 
