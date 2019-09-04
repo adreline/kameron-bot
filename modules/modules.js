@@ -7,4 +7,5 @@ exports.markov_chain = require("./markov/markov_chain.js");
 exports.memegen = require("./memegen/memegen.js");
 exports.accu = require("./weather.js");
 exports.music = require("./music.js");
+exports.astropix = require("./astronomy_picture_daily.js");
 exports.experimental = require("./exp.js");
