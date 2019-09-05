@@ -1,10 +1,11 @@
 const { Client, RichEmbed } = require('discord.js');
 var utilities = require("./utilities.js");
 var client;
+//cube object
 var rc = {
   sides:{
-    1:{
-    fill:'1',
+  1:{
+    fill:'❤',
     state:[
       1,1,1,
       1,1,1,
@@ -18,7 +19,7 @@ var rc = {
     }
   },
   2:{
-    fill:'2',
+    fill:'💛',
     state:[
       2,2,2,
       2,2,2,
@@ -32,7 +33,7 @@ var rc = {
     }
   },
   3:{
-      fill:'3',
+      fill:'💚',
       state:[
         3,3,3,
         3,3,3,
@@ -46,7 +47,7 @@ var rc = {
       }
   },
   4:{
-    fill:'4',
+    fill:'💙',
     state:[
       4,4,4,
       4,4,4,
@@ -60,7 +61,7 @@ var rc = {
     }
   },
   5:{
-    fill:'5',
+    fill:'💜',
     state:[
       5,5,5,
       5,5,5,
@@ -74,7 +75,7 @@ var rc = {
     }
   },
   6:{
-    fill:'6',
+    fill:'🖤',
     state:[
       6,6,6,
       6,6,6,
@@ -92,30 +93,36 @@ var rc = {
   solved:false
 };
 
-
+//create image of current cube side
 function renderCube(rc){
+  //get current side
   var side=rc.sides[rc.view];
-  var render='';
-  var delimiter=0;
-  console.log(side.state);
+  var render='';//final image
+  var delimiter=0;//break after 3 (to produce 3x3 box ofc)
   side.state.forEach(item => {
-    console.log(item);
-    render+=rc.sides[item].fill;
+    render+=rc.sides[item].fill;//each side has unique fill (color) assigned to it
     delimiter++;
     if (delimiter==3) {
+      //add new line when we already printed 3 cells in current row
       delimiter=0;
       render+='\n';
     }
   });
   return render;
 }
+//scramble the cube
 function shuffleCube(rc){
+  //each color can be used only 9 times, pool holds how many uses of given color is left
   var pool=[9,9,9,9,9,9];
   var temp = rc;
     for (var index in temp.sides) {
       for(var indexx in temp.sides[index].state){
         var dice=utilities.getRandom(1,6);
         while (pool[dice-1]==0) {
+          //if for current cell is chosen color that have been already used up, keep rolling new untill
+          //correct is diced
+          // OPTIMIZE: this can keep rolling unavaiable color many times before it roll avaiable one
+          // TODO: remove unavaiable colors and make get random roll using only ones that are avaiable
           dice=utilities.getRandom(1,6);
         }
         temp.sides[index].state[indexx]=dice;
@@ -123,6 +130,23 @@ function shuffleCube(rc){
       }
   }
   return temp;
+}
+//attach reactions
+function addControls(cube,callback){
+  //add reactions one at the time (so they are in order)
+    cube.react('◀')
+    .then(()=>{
+      cube.react('▶')
+      .then(()=>{
+        cube.react('🔀')
+        .then(()=>{
+          cube.react('💢')
+          .then(()=>{
+              callback();
+            });
+        });
+    });
+  });
 }
 exports.spawnCube = function(cli,msg){
 client=cli;
@@ -135,77 +159,47 @@ block.setColor('RANDOM');
 block.setFooter('Viewing side: '+rc.view);
 msg.channel.send(block).then((cube)=>{
 
-  cube.react('🔼')
-  .then(()=>{
-    cube.react('🔽')
-    .then(()=>{
-      cube.react('▶')
-      .then(()=>{
-        cube.react('◀')
-        .then(()=>{
-          cube.react('🔀')
-          .then(()=>{
-            cube.react('💢')
-            .then(()=>{
-                cube.awaitReactions(reaction=>{
-                  switch (reaction.emoji.name) {
-                    case '💢':
-                    for (var index in rc.sides) {
-                      console.log(rc.sides[index].state);
-                    }
+  addControls(cube,function(){
+    cube.awaitReactions(reaction=>{
+      switch (reaction.emoji.name) {
+        case '💢':
+        //this case is for debugging
+        for (var index in rc.sides) {
+          console.log(rc.sides[index].state);
+        }
+        break;
+        case '🔀':
+          console.log('shuffle');
+          rc = shuffleCube(rc);
+          block.setDescription(renderCube(rc));
+          block.setFooter('Viewing side: '+rc.view);
+          cube.edit(block);
+        break;
+        case '▶':
+          console.log('right');
+          if (rc.view==6) { //if at last side, go to beginning
+            rc.view=0;
+          }
+          rc.view++;
+          block.setDescription(renderCube(rc));
+          block.setFooter('Viewing side: '+rc.view);
+          cube.edit(block);
+        break;
+        case '◀':
+          console.log('left');
+          if (rc.view==1) { //if at first side, go to ending
+            rc.view=7;
+          }
+          rc.view--;
+          block.setDescription(renderCube(rc));
+          block.setFooter('Viewing side: '+rc.view);
+          cube.edit(block);
+        break;
+        default:
 
-                    break;
-                    case '🔀':
-                      console.log('shuffle');
-                      rc = shuffleCube(rc);
-                      block.setDescription(renderCube(rc));
-                      block.setFooter('Viewing side: '+rc.view);
-                      cube.edit(block);
-                    break;
-                    case '🔼':
-                      console.log('up');
-                      var side = rc.sides[rc.view];
-                      rc.view=side.move.up;
-                      block.setDescription(renderCube(rc));
-                      block.setFooter('Viewing side: '+rc.view);
-                      cube.edit(block);
-                    break;
-                    case '🔽':
-                      console.log('down');
-                      var side = rc.sides[rc.view];
-                      rc.view=side.move.down;
-                      block.setDescription(renderCube(rc));
-                      block.setFooter('Viewing side: '+rc.view);
-                      cube.edit(block);
-                    break;
-                    case '▶':
-                      console.log('right');
-                      var side = rc.sides[rc.view];
-                      rc.view=side.move.right;
-                      block.setDescription(renderCube(rc));
-                      block.setFooter('Viewing side: '+rc.view);
-                      cube.edit(block);
-                    break;
-                    case '◀':
-                      console.log('left');
-                      var side = rc.sides[rc.view];
-                      rc.view=side.move.left;
-                      block.setDescription(renderCube(rc));
-                      block.setFooter('Viewing side: '+rc.view);
-                      cube.edit(block);
-                    break;
-                    default:
+      }
+    });
+  });
 
-                  }
-                });
-
-              });
-
-          });
-
-      });
-    })
-  })
-});
 });
 }
