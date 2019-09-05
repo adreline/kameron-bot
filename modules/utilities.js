@@ -16,6 +16,11 @@ exports.logMessage = function (author, content){
  //console.log(query.sql);
  connection.end();
 }
+exports.getRandom = function(min, max){
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 exports.includes = function (string,needle){
   if (string.indexOf(needle) > -1) {
     return true;

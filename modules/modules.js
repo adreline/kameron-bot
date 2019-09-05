@@ -8,4 +8,5 @@ exports.memegen = require("./memegen/memegen.js");
 exports.accu = require("./weather.js");
 exports.music = require("./music.js");
 exports.daily = require("./daily.js");
+exports.rubikcube = require("./rubikcube.js");
 exports.experimental = require("./exp.js");

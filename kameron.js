@@ -21,6 +21,7 @@ var memegen=false; //flag if bot is waiting for meme to be generated
 var backup_api=false; //flag if bot is using secondary weather api key
 var tts=false; //if kameron is to use tts to talk to you using cake chat
 
+
 //analyze incoming message
 client.on('message', message => {
 //split message into array of arguments
@@ -34,6 +35,10 @@ if (args[0]=='kameron,') {args[1]='talk';args[0]='kameron';}
 if (args[0]!='kameron') {return;}
 
 switch (args[1]) {
+
+  case 'rubikcube':
+    modules.rubikcube.spawnCube(client,message);
+  break;
 
   case 'play':
     /*

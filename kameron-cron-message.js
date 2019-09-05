@@ -14,7 +14,7 @@ var channelid='596691844205903878'; //methanos
 var guildid='596691844205903874'; //adios
 
 var message_id=parseInt(process.argv[2]);
-
+console.log(process.argv[2]);
 if (isNaN(message_id)) {
   switch (process.argv[2]) {
     case 'natgeopix':
