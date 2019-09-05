@@ -20,6 +20,7 @@ var writting=false; //flag if bot is waiting for markov text to be generated
 var memegen=false; //flag if bot is waiting for meme to be generated
 var backup_api=false; //flag if bot is using secondary weather api key
 var tts=false; //if kameron is to use tts to talk to you using cake chat
+var animation_type='moon'; //type of animation kameron should use in all commands
 
 
 //analyze incoming message
@@ -35,6 +36,23 @@ if (args[0]=='kameron,') {args[1]='talk';args[0]='kameron';}
 if (args[0]!='kameron') {return;}
 
 switch (args[1]) {
+
+  case 'animate':
+    if (args[2]!=void(0)) {
+      if (args[2]=='moon'||args[2]=='bar'||args[2]=='clock') {
+        animation_type=args[2];
+        message.react('🆗');
+      }
+    }else {
+      message.channel.send('.').then((msg)=>{
+      var pid =  modules.animate.startAnimation('',animation_type,msg);
+          setTimeout(function() {
+            console.log('Calling end event');
+            modules.animate.endAnimation(pid);
+          }, 10000);
+      });
+    }
+  break;
 
   case 'rubikcube':
     modules.rubikcube.spawnCube(client,message);
@@ -241,7 +259,12 @@ switch (args[1]) {
   case 'markov':
     //check if module is running, it is necessery because it uses a lot of computing power
     //so only one at the time is allowed
+    var pid;//animation process pid
     if (!writting) {
+      //spawn cute loading animation using emoji to show that command is working
+        message.channel.send('Processing request ...').then((msg)=>{
+           pid = modules.animate.startAnimation('Processing request ...',animation_type,msg);
+        });
       writting=true;
       modules.markov_chain.chain(args[2],args[3],args[4],function(res,text){
         //if {tts} is at command end, bot will not only print results but read them over voice channel
@@ -258,6 +281,7 @@ switch (args[1]) {
           message.channel.send(res);
         }
         writting=false;
+        modules.animate.endAnimation(pid);//send end signal to animation process
       });
       //it is long running task so react to user with a tick so it is known bot is working and command is ok
       message.react('🆗');
@@ -290,6 +314,7 @@ switch (args[1]) {
       validate command
       limit to one at the time, because this command uses significant amount of cpu
       */
+      var pid;//animation process pid
       if (memegen) {
         message.channel.send('im still editing previous image');
         break;
@@ -313,8 +338,13 @@ switch (args[1]) {
     memegen=true;
     //it is long running task so react to user with a tick so it is known bot is working and command is ok
     message.react('🆗');
+    //spawn cute loading animation using emoji to show that command is working
+    message.channel.send('Processing request ...').then((msg)=>{
+        pid = modules.animate.startAnimation('Processing request ...',animation_type,msg);
+    });
     modules.memegen.makememe(caption,filename,url,function(res){
     memegen=false;
+    modules.animate.endAnimation(pid);
       message.channel.send("meme",{
         files: [
         '/home/pi/Downloads/bot-kameron/modules/memegen/conv-final.jpg'
