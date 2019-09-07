@@ -2,7 +2,6 @@ const request = require('request');
 const cheerio = require('cheerio');
 const Parser = require('rss-parser');
 const fs = require('fs');
-const sci_journal = require('./libs/science_journal_parser.js');
 
 //this returns astronomy picture of the day from nasa
 exports.getAstroPicture = function(callback){
@@ -46,40 +45,6 @@ exports.getAstroPicture = function(callback){
             });
     }
 
-  });
-}
-//this returns pictures of the day from nat geo
-exports.getNatgeoPictures = function(callback){
-  request({uri:'https://www.nationalgeographic.com/photography/photo-of-the-day/_jcr_content/.gallery.json',timeout: 5000}, function (error, response, body) {
-    if (error) {
-      callback('error')
-    }else {
-      var gallery = JSON.parse(body);
-      var pic=gallery.items[0];
-      var caption = pic.caption.replace('<p>','').replace('</p>','').trim();
-      callback({
-        'title':pic.title,
-        'caption':caption,
-        'credit':pic.credit,
-        'picture':pic.originalUrl,
-        'url':pic['full-path-url']
-      });
-    }
-  });
-}
-//this get news from email newsletter
-exports.getScienceJournal = function(callback){
-  console.log('[Daily.js] Requesting articles');
-  sci_journal.scienceJournal(function(res){
-    console.log('[Daily.js] Received');
-    console.log('[Daily.js] Veryfing');
-    if (res!=void(0)) {
-      console.log('[Daily.js] Looks ok, returning');
-      callback(res);
-    }else {
-      console.log('[Daily.js] articles are undefined');
-      callback('error');
-    }
   });
 }
 //get news from sciencex rss feed
