@@ -2,7 +2,5 @@
 /modules/memegen/*.jpg
 /modules/memegen/*.jpeg
 /modules/memegen/*.png
-*.wav
-test.js
-recognize.py
+/modules/experimental
 /modules/processing

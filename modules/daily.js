@@ -1,5 +1,8 @@
 const request = require('request');
 const cheerio = require('cheerio');
+const Parser = require('rss-parser');
+const fs = require('fs');
+const sci_journal = require('./libs/science_journal_parser.js');
 
 //this returns astronomy picture of the day from nasa
 exports.getAstroPicture = function(callback){
@@ -35,10 +38,11 @@ exports.getAstroPicture = function(callback){
           });
             callback({
               'title':title,
-              'explanation':explanation,
+              'explanation':explanation.substring(0, 500),
               'picture_small':picture_small,
               'picture_big':picture_big,
-              'credits':credits
+              'credits':credits,
+              'url':'https://apod.nasa.gov/apod/astropix.html'
             });
     }
 
@@ -62,4 +66,79 @@ exports.getNatgeoPictures = function(callback){
       });
     }
   });
+}
+//this get news from email newsletter
+exports.getScienceJournal = function(callback){
+  console.log('[Daily.js] Requesting articles');
+  sci_journal.scienceJournal(function(res){
+    console.log('[Daily.js] Received');
+    console.log('[Daily.js] Veryfing');
+    if (res!=void(0)) {
+      console.log('[Daily.js] Looks ok, returning');
+      callback(res);
+    }else {
+      console.log('[Daily.js] articles are undefined');
+      callback('error');
+    }
+  });
+}
+//get news from sciencex rss feed
+exports.getSciencex = function(callback){
+	console.log('[Daily.js] Loading delimiter');
+	fs.readFile('/home/pi/Downloads/bot-kameron/temp/sciencex.br', 'utf8', function(err, data) {
+  if (err){
+  	console.log('[Daily.js] Error reading delimiter\n'+err);
+  }else{
+  	console.log('[Daily.js] Delimiter loaded');
+  var breakpoint=data.trim();
+  var parser = new Parser({
+  customFields: {
+    item: ['media:thumbnail'],
+  }
+});
+ var adress="https://sciencex.com/rss-feed/my-news/cb6f9a19ea7e7af2c4f9aa0de53bfb07a0ca93d5/";
+console.log('[Daily.js] Requesting rss feed');
+parser.parseURL( adress, function(err, feed) {
+	if(err){
+		callback('error');
+		}
+  console.log(feed.title);
+  var agregate=[];
+  for(var i in feed.items){
+  	var entry = feed.items[i];
+  	console.log('[Daily.js] Reading entry');
+  if(entry.title==breakpoint){
+  console.log('[Daily.js] Breakpoint reached, ignoring entry');
+  break;
+  }else{
+  	console.log('[Daily.js] Pushing new entry');
+    agregate.push({
+    	title: entry.title,
+        url: entry.link,
+        body: entry.content.substring(0,400),
+        picture: entry['media:thumbnail'].$.url
+});
+
+}
+  }
+    	if(agregate.length==0){
+  	console.log('[Daily.js] No new articles found');
+  callback('error');
+
+  }else{
+  var br = agregate[0].title;
+fs.writeFile("/home/pi/Downloads/bot-kameron/temp/sciencex.br", br, function(err) {
+    if(err) {
+        console.log('[Daily.js] Error saving delimiter');
+        callback('error');
+    }else{
+    console.log('[Daily.js] Delimiter saved');
+    }
+});
+  console.log('[Daily.js] Articles read, returning');
+ callback(agregate);
+ }
+});
+  }
+});
 }

@@ -10,4 +10,4 @@ exports.music = require("./music.js");
 exports.daily = require("./daily.js");
 exports.rubikcube = require("./rubikcube.js");
 exports.animate = require("./animate.js");
-exports.experimental = require("./exp.js");
+exports.experimental = require("./experimental/tts-technologies.js");

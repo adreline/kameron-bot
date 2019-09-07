@@ -1,10 +1,7 @@
-1. move all wave and all none js files into experimental modules folder
-2. add comments on all modules
-3. add Define module
-4. add private reminders that bot pm's you
-5. add rubik cube
-6. add maze game
-7. add science journal newsletter
-8. add processing interpreter
-9. add rubikcube command description to manual.js module
-10. add animate command description to manual.js module
+- add comments on all modules
+- add Define module
+- add private reminders that bot pm's you
+- add rubik cube
+- add maze game
+- add science journal newsletter
+- add processing interpreter

@@ -256,7 +256,7 @@ switch (args[1]) {
     message.channel.send(manual.getHelp(args[2],client,client.guilds.get(guildid).iconURL));
   break;
 
-  case 'markov':
+  case 'lorem':
     //check if module is running, it is necessery because it uses a lot of computing power
     //so only one at the time is allowed
     var pid;//animation process pid
