@@ -8,9 +8,11 @@ var post_data = {
   "from_cakechat":true
 };
 exports.talk = function(mess,callback){
+  console.log('[cake-chat.js] talk() function called');
   post_data.context.shift();
   post_data.context.push(mess);
-  console.log('context:'+post_data.context.toString());
+  console.log('[cake-chat.js] context:'+post_data.context.toString());
+  console.log('[cake-chat.js] Making POST request');
   request({
         url: 'https://cakechat.replika.ai/cakechat_api/v1/actions/get_response',
         method: "POST",
@@ -21,9 +23,9 @@ exports.talk = function(mess,callback){
           if (!error && response.statusCode == 200) {
               callback(response.body.response);
           }else {
-              console.log('response');
+              console.log('[cake-chat.js] Error occured, response is:');
               console.log(response.body.message);
-              callback('ERROR');
+              callback('error');
           }
       }
   );

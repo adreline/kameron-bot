@@ -95,6 +95,7 @@ var rc = {
 
 //create image of current cube side
 function renderCube(rc){
+  console.log('[rubikcube.js] renderCube() function called');
   //get current side
   var side=rc.sides[rc.view];
   var render='';//final image
@@ -112,6 +113,7 @@ function renderCube(rc){
 }
 //scramble the cube
 function shuffleCube(rc){
+  console.log('[rubikcube.js] shuffleCube() function called');
   //each color can be used only 9 times, pool holds how many uses of given color is left
   var pool=[9,9,9,9,9,9];
   var temp = rc;
@@ -133,6 +135,7 @@ function shuffleCube(rc){
 }
 //attach reactions
 function addControls(cube,callback){
+  console.log('[rubikcube.js] addControls() function called');
   //add reactions one at the time (so they are in order)
     cube.react('◀')
     .then(()=>{
@@ -149,6 +152,7 @@ function addControls(cube,callback){
   });
 }
 exports.spawnCube = function(cli,msg){
+  console.log('[rubikcube.js] spawnCube() function called');
 client=cli;
 var block = new RichEmbed();
 block.setTitle('Rubik Cube');
@@ -161,6 +165,7 @@ msg.channel.send(block).then((cube)=>{
 
   addControls(cube,function(){
     cube.awaitReactions(reaction=>{
+      console.log('[rubikcube.js] spawnCube() reaction detected -> '+reaction.emoji.name);
       switch (reaction.emoji.name) {
         case '💢':
         //this case is for debugging

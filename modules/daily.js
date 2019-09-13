@@ -1,12 +1,17 @@
 const request = require('request');
 const cheerio = require('cheerio');
 const Parser = require('rss-parser');
+const inspire=require('./inspire-me.js')
 const fs = require('fs');
 
 //this returns astronomy picture of the day from nasa
 exports.getAstroPicture = function(callback){
+  console.log('[Daily.js] getAstroPicture() function called');
+  console.log('[Daily.js] making GET request');
   request({uri:'https://apod.nasa.gov/apod/astropix.html',timeout: 5000}, function (error, response, body) {
     if (error) {
+      console.log('[Daily.js] Request failed, error is:');
+      console.log(error);
       callback('error');
     }else {
       const $ = cheerio.load(body);
@@ -35,6 +40,7 @@ exports.getAstroPicture = function(callback){
               credits+=item.children[0].data.trim()+' ';
             }
           });
+          console.log('[Daily.js] Data collected, returning');
             callback({
               'title':title,
               'explanation':explanation.substring(0, 500),
@@ -77,11 +83,15 @@ parser.parseURL( adress, function(err, feed) {
   break;
   }else{
   	console.log('[Daily.js] Pushing new entry');
+  var thumb="https://imgur.com/8vd6Qkp.jpg";
+  if(entry['media:thumbnail']!=void(0)){
+  	thumb=entry['media:thumbnail'].$.url;
+  }
     agregate.push({
     	title: entry.title,
         url: entry.link,
         body: entry.content.substring(0,400),
-        picture: entry['media:thumbnail'].$.url
+        picture: thumb
 });
 
 }
@@ -106,4 +116,65 @@ fs.writeFile("/home/pi/Downloads/bot-kameron/temp/sciencex.br", br, function(err
 });
   }
 });
+}
+//I want him to tell me every Friday how much more suffering i have left till holidays 2020
+exports.tillVacations = function(callback){
+  /*
+  niedziela - 0
+  pon 1
+  wtorek 2
+  sroda 3
+  czw 4
+  piat 5
+  sob 6
+  */
+  fs.readFile('/home/pi/Downloads/bot-kameron/temp/till_vacations.br', 'utf8', function(err, data) {
+    if(err) {
+        console.log('[Daily.js] Error reading till_vacations');
+        callback('error');
+    }else{
+    console.log('[Daily.js] till_vacations read');
+    //if weekend day dont substract
+    var till_vacations = parseInt(data);
+    var week_day=new Date().getDay();
+    if (week_day!=6&&week_day!=0) {
+      till_vacations-=1;
+    }
+  //save number of days
+    fs.writeFile("/home/pi/Downloads/bot-kameron/temp/till_vacations.br", till_vacations, function(err) {
+        if(err) {
+            console.log('[Daily.js] Error saving till_vacations');
+            callback('error');
+        }else{
+            console.log('[Daily.js] till_vacations saved, returning data');
+            inspire.inspireMe((link)=>{
+              //make cute progress bar
+              var total=260;
+              var progress=total-till_vacations;
+              var pc=Math.round((progress/total)*100);
+              var filled_bars=Math.round(pc/(100/10));
+              var unfilled_bars=10-filled_bars;
+              var bar='';
+              while (filled_bars!=0) {
+                bar+='💙';
+                filled_bars--;
+              }
+              while (unfilled_bars!=0) {
+                bar+='🖤';
+                unfilled_bars--;
+              }
+              //post only at Friday
+              if (week_day==5) {
+                callback({num:till_vacations,image:link,bar:bar,pc:pc});
+              }else {
+                callback('not today');
+              }
+            });
+        }
+    });
+    }
+  });
+
+
+
 }

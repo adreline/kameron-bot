@@ -5,6 +5,7 @@ var absolutePath='/home/pi/Downloads/bot-kameron/modules/memegen/';
 
 
 		function wrap(text){
+			console.log('[memegen.js] wrap() function called');
 			/*
 			Split text into strings no longer then 25 characters, without breaking words.
 			Basicly wrap text to next lines so it fits on image
@@ -24,6 +25,7 @@ var absolutePath='/home/pi/Downloads/bot-kameron/modules/memegen/';
 				return result; //return the result
 			}
 		function addWrappedText(array,index,callback){
+			console.log('[memegen.js] addWrappedText() function called');
 			/*
 			since gm is async, this function is recursive
 			adds each line of text located in array variable passed to it
@@ -64,6 +66,7 @@ var absolutePath='/home/pi/Downloads/bot-kameron/modules/memegen/';
 					//end of function
 	}
 		exports.makememe = function(caption,image,url,callback){
+			console.log('[memegen.js] makememe() function called');
 			//clear existing parts and images
 			shell.exec('rm '+absolutePath+'*.jpg');
 			var string=caption;
@@ -85,11 +88,13 @@ var absolutePath='/home/pi/Downloads/bot-kameron/modules/memegen/';
 					.gravity('South')
 					.extent(null, 1250+(an.length*100))//extend image with white background, 100px of bg for each line of text
 					.write(absolutePath+'conv0.jpg', function (err) {
+						console.log('[memegen.js] makememe() opening file');
 					  if (!err){
-					     console.log('done extending');
+							console.log('[memegen.js] makememe() file opened, done extending');
 							 //start adding text
 					     addWrappedText(an,0,callback);
 					  }else {
+							console.log('[memegen.js] makememe() error operating on file');
 					    console.log(err);
 					  }
 					});

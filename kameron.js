@@ -3,6 +3,8 @@ const { Client, RichEmbed } = require('discord.js');
 const http = require('http');
 const https = require('https');
 var request = require("request");
+const fs = require('fs');
+const epoch=1568124324009;
 
 const modules = require('./modules/modules.js');
 const manual = require('./manual.js');
@@ -11,6 +13,7 @@ const client = new Client();
 const token='NTk2NzI5NDkyMTk0NzIxODEz.XR9xug.jXvAdZvG8h8X9xwrHt-qmtDwEPM';
 var channelid='596691844205903878'; //methanos
 var guildid='596691844205903874'; //adios
+var bot_dev_room='613163028254425089';
 //AccuWeather api keys
 var primary_key = 'eQqfy0EaGMiJ69IGC6W3utnE3Q6Eenes';
 var backup_key = 'g9HXOhAljxUD1eR2ruhZRtrG6Wubv6Lb';
@@ -34,10 +37,84 @@ if (args[0]=='X') {message.channel.send('D');return;}
 if (args[0]=='kameron,') {args[1]='talk';args[0]='kameron';}
 //if message does not start with {kameron} go back and do nothing (obviously)
 if (args[0]!='kameron') {return;}
-
+console.log('[kameron.js] Command received -> '+message.content);
 switch (args[1]) {
 
+  case 'opgg':
+  //league of legends tracker
+  message.react('🆗');
+    if (args[2]===void(0)) {
+      //assuming live match is being requested
+      modules.opgg.getMatch(message.author.id,(match)=>{
+        if (match.code==200) {
+          var block = new RichEmbed();
+          block.setColor('#ad3');
+          block.setTitle('Match of '+message.author.username+' as **'+match.summoner+'**');
+          block.addField('TEAM BLUE',match.team1,true);
+          block.addField('TEAM RED',match.team2,true);
+          block.setThumbnail(match.icon);
+          message.channel.send(block);
+          message.delete();
+        }else {
+          var block = new RichEmbed();
+          block.setColor('#ad3');
+          block.setTitle('Currently not in match');
+          block.addField(match.tier+' '+match.rank,'wins: '+match.win+' losses: '+match.loss+'\n**LP**: '+match.lp,true);
+          block.addField('Region',match.region,true);
+          block.setAuthor(message.author.username+' as '+match.summoner,match.summoner_icon);
+          block.setThumbnail(match.rank_icon);
+          message.channel.send(block);
+          message.delete();
+        }
+      });
+    }else {
+      //assuming setting lol account details
+      //order is as follows <region> <name> then pass msg.author id
+      var dirt='kameron opgg '+args[2];
+      var name = message.content.replace(dirt,'').trim();
+      modules.opgg.setSummoner(name,args[2].toUpperCase(),message.author.id,(sig)=>{
+        message.channel.send(sig);
+        message.delete();
+      });
+    }
+  break;
+
+  case 'me':
+  //just cool stats
+    var data = modules.tracker.getData(message.author.id,epoch);
+    var block = new RichEmbed();
+    block.setColor('#bb33dd');
+    block.setTitle(message.author.username+'  '+data.rank.lvl+'` lvl `'+data.rank.xp+'` xp `');
+    block.addField('Rank progress',' ` '+data.rank.xp+'xp ` '+data.rank.bar+' ` '+data.rank.next+'xp ` ',true);
+    block.addField('Cool Details','You have been online for ` '+data.online_score+' `\n**This traslates to:**\n'+data.p_online+'% of your life <:dank:597902016865501185>\n'+data.disprofit+' € of electricity cost <:pepethink:597901905301209098>\n'+data.carbon+' kg of CO₂ <:pepehands:597901991242498052>',true);
+    block.addField('<:pogchamp:597074922652565504> Your top games:',data.games,true);
+    block.setThumbnail(message.author.avatarURL);
+    block.setFooter('Since: 10.09.2019');
+    message.channel.send(block);
+  break;
+
+  case 'stacktrace':
+  //this command allows you to view logs in case something broke
+  var filepath='kameron.log';
+    if (args[2]!=void(0)) {
+      if (args[2]=='cron') {
+        filepath='cron.log';
+      }
+    }
+      fs.readFile('/home/pi/Downloads/bot-kameron/logs/'+filepath, 'utf8', function(err, data) {
+      if (err){
+        message.channel.send('`unable to read log file`\n'+err);
+      }else {
+        var stacktrace = '**Recent calls in** `'+filepath+'`\n```\n'+data.substring((data.length-600),data.length)+'\n```\n';
+        message.channel.send(stacktrace);
+      }
+    });
+  break;
+
   case 'animate':
+  /*
+    uses message editing to display simple animation in 1 fps (wow)
+  */
     if (args[2]!=void(0)) {
       if (args[2]=='moon'||args[2]=='bar'||args[2]=='clock') {
         animation_type=args[2];
@@ -126,7 +203,7 @@ switch (args[1]) {
               block.setURL(report.link);
               block.setThumbnail(report.icon);
               block.addField('**'+report.text+'**\n',report.details,true);
-              block.setColor('RANDOM');
+              block.setColor('#3355dd');
               block.setFooter('Data provided by https://developer.accuweather.com/\n');
               message.channel.send(block);
         }else {
@@ -156,16 +233,19 @@ switch (args[1]) {
 
   case 'poll':
   //invoke createPoll function from poll module
-      message.channel.send(modules.poll.createPoll(message.author,message.content)).then(function(message){
-        message.react('👎');
-        message.react('👍');
+      message.channel.send(modules.poll.createPoll(message.author,message.content)).then(function(msg){
+        message.delete().then(()=>{
+          msg.react('👍').then(()=>{
+            msg.react('👎');
+          });
+        });
       });
   break;
 
   case 'bitbucket':
     //this is hardcoded response with repository info
       var block = new RichEmbed();
-      block.setColor('RANDOM');
+      block.setColor('#6633dd');
       block.setTitle('Bitbucket information');
       block.setDescription('Use this account **or** create your own\n*but if you create own, dm me it pls*\nemail:||yiu14833@bcaoo.com||\npassword:||xkXVOuS00Igj||\nregister here: https://bitbucket.org\n__Link to repository:__ https://bitbucket.org/not_ravi/bot-kameron/src/master');
       block.setThumbnail(client.user.avatarURL);
@@ -177,7 +257,7 @@ switch (args[1]) {
         var size = parseInt(args[2]);
         if (!isNaN(size)&&size<50) {
           //if argument is a number and is under discord api limit of 50, delete
-          message.channel.bulkDelete(size);
+          message.channel.bulkDelete(size+1);
         }else {
           if (size>50||size==50) {
             message.channel.send('This is too many, max is 50');
@@ -266,7 +346,7 @@ switch (args[1]) {
            pid = modules.animate.startAnimation('Processing request ...',animation_type,msg);
         });
       writting=true;
-      modules.markov_chain.chain(args[2],args[3],args[4],function(res,text){
+      modules.markov_chain.chain(args[2],parseInt(args[3]),args[4],function(res,text){
         //if {tts} is at command end, bot will not only print results but read them over voice channel
         if (message.content.endsWith('tts')) {
           //but do it only if user is in voice channel
@@ -299,7 +379,7 @@ switch (args[1]) {
       //if user exists
       var block = new RichEmbed();
       //block.setDescription("");
-      block.setColor('RANDOM');
+      block.setColor('#dd6633');
       block.setAuthor(userr.username,userr.avatarURL,userr.avatarURL);
       block.setImage(userr.avatarURL);
       message.channel.send(block);
@@ -362,7 +442,23 @@ switch (args[1]) {
 
 client.on('ready', () => {
   client.user.setActivity("type 'kameron help'", { type: 'WATCHING' })
-  console.log('R');
+  console.log('[kameron.js] Client online');
+  modules.tracker.bootLoadDB();
+  /*
+    var guild = client.guilds.get(guildid);
+    if(guild && guild.channels.get(bot_dev_room)){
+        guild.channels.get(bot_dev_room).send('Yo it\'s me, ya boi kameron');
+    } else {
+        console.log("[kameron.js] channel not found");
+    }
+    */
+});
+
+
+client.on('presenceUpdate', (oldMember,newMember)=>{
+  var user_name=oldMember.user.username;
+  console.log('[kameron.js] presence change of '+user_name);
+  modules.tracker.updateData(oldMember,newMember);
 });
 
 client.login(token);

@@ -2,6 +2,7 @@ var mysql = require('mysql');
 var shell = require('shelljs');
 
 function validateCron(timing){
+  console.log('[reminder.js] validateCron() function called');
         var arr = timing.split(" ");
         if (arr.length!=5) {
           return false;
@@ -30,24 +31,33 @@ function validateCron(timing){
         }
 }
 function setEvent(message,onetime,time){
+  console.log('[reminder.js] setEvent() function called');
     var connection = mysql.createConnection({
    host : 'localhost',
    user : 'kameron_bot',
    password : 'fGjTVq0T',
    database : 'kameron_bot'
    });
+   console.log('[reminder.js] setEvent() connecting to data base');
    connection.connect();
    var post  = {id: null, message: message, onetime: onetime, created_at: mysql.raw('NOW()'), updated_at: mysql.raw('NOW()')};
    var query = connection.query('INSERT INTO cron_messages SET ?', post, function (error, results, fields) {
-     if (error) throw error;
-        var comm = "(crontab -l ; echo '"+time+" /usr/local/sbin/node /home/pi/Downloads/bot-kameron/kameron-cron-message.js "+results.insertId+"') | crontab -";
-        shell.exec(comm);
+     if (error) {
+       console.log('[reminder.js] setEvent() error occured:');
+       console.log(error);
+     }else {
+       console.log('[reminder.js] setEvent() success');
+       var comm = "(crontab -l ; echo '"+time+" /usr/local/sbin/node /home/pi/Downloads/bot-kameron/kameron-cron-message.js "+results.insertId+"') | crontab -";
+       shell.exec(comm);
+     }
    });
    //console.log(query.sql);
+   console.log('[reminder.js] setEvent() ending connection');
    connection.end();
 }
 
 exports.remind = function(message,callback){
+  console.log('[reminder.js] remind() function called');
   //just  pattern for cron timing
   var patt = /(\d|[*]|\d\d)\s(\d|[*]|\d\d)\s(\d|[*]|\d\d)\s(\d|[*]|\d\d)\s(\d|[*]|\d\d)/g;
   var timing = patt.exec(message.content);
@@ -55,12 +65,12 @@ exports.remind = function(message,callback){
     var remind_me_of = message.content.replace('kameron remind','').replace(timing[0],'').trim();
     remind_me_of=remind_me_of.replace('me of','').trim();
     remind_me_of=remind_me_of.replace('once','').trim();
-    console.log('found something resembling cron timing: '+timing[0]);
-    console.log('that means the message is this: '+remind_me_of);
+    console.log('[reminder.js] remind() found something resembling cron timing: '+timing[0]);
+    console.log('[reminder.js] remind() that means the message is this: '+remind_me_of);
     //validate cron timing
     if (validateCron(timing[0])) {
       //valid
-      console.log('timing is valid');
+      console.log('[reminder.js] remind() timing is valid');
         if (remind_me_of&&remind_me_of!='') {
           setEvent(remind_me_of,message.content.endsWith("once"),timing[0]);
           callback('Ok, i will remind you about "'+remind_me_of+'"');
@@ -69,12 +79,12 @@ exports.remind = function(message,callback){
         }
     }else {
       //invalid
-      console.log('timing is invalid');
+      console.log('[reminder.js] remind() timing is invalid');
       callback('invalid timing');
     }
 
   }else {
-    console.log('timing not found');
+    console.log('[reminder.js] remind() timing not found');
     callback('timing not found');
   }
 

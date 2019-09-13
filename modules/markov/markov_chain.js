@@ -2,6 +2,7 @@ var shell = require('shelljs');
 const { RichEmbed } = require('discord.js');
 
 exports.chain = function(source,state,length,callback){
+  console.log('[markov_chain.js] chain() function called');
   //source state length
   if (state!=1||state!=2||state!=3) {
     state=3;
@@ -12,7 +13,7 @@ exports.chain = function(source,state,length,callback){
       var block = new RichEmbed();
       block.setTitle('Story');
       block.setDescription(data);
-      block.setColor('RANDOM');
+      block.setColor('#dd3355');
       callback(block,data);
     });
   }else {
@@ -27,7 +28,7 @@ exports.chain = function(source,state,length,callback){
               var block = new RichEmbed();
               block.setTitle('Story');
               block.setDescription(data);
-              block.setColor('RANDOM');
+              block.setColor('#dd3355');
               callback(block,data);
             }
 
